@@ -1,134 +1,116 @@
 <div align="center">
 
-# **❤️ IoT Patient Health Monitoring System**
+# **🔒 Q49 – Security Vulnerability Analysis**
 
-### *Smart Health Monitoring using ESP32*
+*IoT Summer School 2026*
 
 </div>
 
 ---
 
-## **📌 Problem Statement**
+## **🎯 Objective**
 
-Continuous monitoring of a patient's vital signs is essential for the early detection of potential health issues. This project simulates a basic **IoT Patient Health Monitoring System** using an **ESP32**. An **LDR sensor** is used as a simulated physiological input to generate **Heart Rate** and **Blood Oxygen (SpO₂)** values. The system analyzes these readings and activates an alert indicator whenever abnormal conditions are detected.
-
----
-
-## **💡 Solution Approach**
-
-The **ESP32** continuously reads analog values from an **LDR sensor** and applies a **moving average filter** to reduce fluctuations and improve stability.
-
-The filtered sensor value is mapped to simulated:
-
-- ❤️ Heart Rate (BPM)
-- 🩸 Blood Oxygen Level (SpO₂)
-
-The generated vital signs are continuously compared against predefined safety thresholds.
-
-- 🟢 If all readings are within the normal range, the system remains in a safe state.
-- 🔴 If any parameter exceeds the safe limits, an **LED alert** is activated.
-
-All sensor readings and system status are displayed on the **Serial Monitor** every **2 seconds**.
+Analyze common security vulnerabilities found in IoT applications, understand the risks associated with each vulnerability, and implement recommended security best practices to build secure IoT systems.
 
 ---
 
-## **✨ Features**
+## **🛡️ Security Vulnerabilities**
 
-- ✅ Simulated Heart Rate monitoring
-- ✅ Simulated SpO₂ monitoring
-- ✅ Moving average filtering for stable readings
-- ✅ Automatic abnormal condition detection
-- ✅ LED-based health alert indicator
-- ✅ Real-time Serial Monitor logging
-- ✅ Simple and lightweight ESP32 implementation
-
----
-
-## **🛠️ Hardware Components**
-
-- ESP32 DevKit V1
-- LDR (Light Dependent Resistor)
-- 10 kΩ Resistor (Voltage Divider)
-- LED
-- 220 Ω Resistor
-- Breadboard
-- Jumper Wires
+| **Vulnerability** | **Security Risk** | **Recommended Solution** |
+|-------------------|-------------------|--------------------------|
+| **Hardcoded Wi-Fi SSID and Password** | Credentials can be extracted from source code or firmware, allowing attackers to gain unauthorized access to the network. | Store credentials in a separate `config.h` file excluded using `.gitignore`, or use secure credential storage. |
+| **Using HTTP Instead of HTTPS** | Data is transmitted without encryption, making it vulnerable to eavesdropping and Man-in-the-Middle (MITM) attacks. | Use **HTTPS** with **TLS/SSL encryption** and validate server certificates. |
+| **Public MQTT Broker Without Authentication** | Anyone can publish or subscribe to MQTT topics, enabling unauthorized access, spoofing, or data tampering. | Use an authenticated MQTT broker with **username/password** authentication and **TLS encryption**. |
+| **No Validation of Incoming Commands** | Attackers may send malicious or unexpected commands that can cause unsafe device behavior. | Validate all incoming commands and allow only predefined, authorized commands. |
+| **No Access Control or Authentication** | Devices cannot verify the identity of connected clients, increasing the risk of unauthorized control. | Implement authentication using **API keys**, **authentication tokens**, or **client certificates**. |
 
 ---
 
-## **🔌 Pin Connections**
+## **💻 Corrected Code Examples**
 
-| Component | ESP32 GPIO Pin |
-|-----------|----------------|
-| LDR Output | GPIO 34 |
-| Alert LED | GPIO 14 |
-| LDR VCC | 3.3V |
-| LDR GND | GND |
+### **1️⃣ Secure Wi-Fi Credentials (`config.h`)**
 
----
+### **❌ Before**
 
-## **💻 Software Requirements**
-
-- Arduino IDE
-- ESP32 Board Package
-- Arduino Core Library
-
----
-
-## **📊 Monitoring Thresholds**
-
-| Parameter | Normal Range | Alert Condition |
-|-----------|--------------|-----------------|
-| ❤️ Heart Rate | 50–120 bpm | Below 50 or Above 120 bpm |
-| 🩸 SpO₂ | ≥ 94% | Below 94% |
-
----
-
-## **⚙️ Working Principle**
-
-1. Read the analog value from the **LDR sensor**.
-2. Apply a **moving average filter** using the last five samples.
-3. Convert the filtered value into simulated **Heart Rate** and **SpO₂** readings.
-4. Compare the readings with predefined safety thresholds.
-5. Turn the **Alert LED ON** if any parameter falls outside the safe range.
-6. Display the current Heart Rate, SpO₂, and Alert Status on the **Serial Monitor** every **2 seconds**.
-
----
-
-## **🖥️ Sample Serial Monitor Output**
-
-```text
---------------------------
-Heart Rate : 76 bpm
-SpO₂       : 98 %
-Alert      : NO
---------------------------
-
---------------------------
-Heart Rate : 128 bpm
-SpO₂       : 92 %
-Alert      : YES
---------------------------
+```cpp
+const char* ssid = "PublicWiFi";
+const char* password = "12345678";
 ```
 
+### **✅ After**
+
+```cpp
+#include "config.h"
+
+WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+```
+
+### **config.h**
+
+```cpp
+#ifndef CONFIG_H
+#define CONFIG_H
+
+const char* WIFI_SSID = "YOUR_WIFI_NAME";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+
+#endif
+```
+
+> **💡 Best Practice:** Add `config.h` to your `.gitignore` file so sensitive credentials are never uploaded to GitHub.
+
 ---
 
-## **🚀 Future Improvements**
+### **2️⃣ Use HTTPS Instead of HTTP**
 
-- Replace the LDR with a real **MAX30102 Pulse Oximeter Sensor**.
-- Add body temperature monitoring.
-- Upload patient data to the cloud using **MQTT** or **HTTP**.
-- Develop a web or mobile dashboard for remote monitoring.
-- Send SMS or email notifications during emergency conditions.
-- Store historical patient data for trend analysis.
+### **❌ Before**
+
+```cpp
+HTTPClient http;
+http.begin("http://example.com/api");
+```
+
+### **✅ After**
+
+```cpp
+WiFiClientSecure client;
+client.setInsecure();   // For testing only
+
+HTTPClient https;
+https.begin(client, "https://example.com/api");
+```
+
+> **⚠️ Note:** `client.setInsecure()` should only be used for testing. In production, always use proper **TLS certificate validation** or **certificate pinning**.
+
+---
+
+## **✅ Security Best Practices**
+
+- 🔐 Never hardcode Wi-Fi credentials in source code.
+- 🌐 Always use **HTTPS** instead of HTTP.
+- 📡 Secure MQTT communication using **TLS/SSL**.
+- 👤 Enable authentication for users and devices.
+- ✅ Validate all incoming data and commands.
+- 🔑 Use strong, unique passwords and API keys.
+- 🔄 Keep ESP32 firmware and libraries up to date.
+- 🚫 Disable unnecessary network services and open ports.
 
 ---
 
 ## **🎯 Conclusion**
 
-The **IoT Patient Health Monitoring System** demonstrates how an **ESP32** can be used to simulate continuous monitoring of vital signs. By generating **Heart Rate** and **SpO₂** values from sensor input, applying filtering techniques, and detecting abnormal conditions, the system provides a simple yet effective demonstration of IoT-based healthcare monitoring.
+Building secure IoT applications requires protecting sensitive credentials, encrypting network communication, authenticating users and devices, and validating all incoming data.
 
-With future integration of real biomedical sensors and cloud connectivity, this system can be extended into a practical remote patient monitoring solution for hospitals, clinics, and home healthcare.
+By following these security best practices, developers can significantly reduce the risk of:
+
+- Unauthorized access
+- Data theft
+- Man-in-the-Middle (MITM) attacks
+- Command injection
+- Device spoofing
+- Malicious system control
+
+Implementing these measures helps ensure that IoT devices remain reliable, secure, and resilient against modern cyber threats.
 
 ---
 
@@ -136,6 +118,6 @@ With future integration of real biomedical sensors and cloud connectivity, this 
 
 **Name:** **VASU JAMWAL**
 
-**Project:** IoT Patient Health Monitoring System
-
 **Course:** IoT Summer School 2026
+
+**Question:** **Q49 – Security Vulnerability Analysis**
